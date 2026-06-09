@@ -72,13 +72,40 @@ def validate(X, y, k):
     return count / total
 
 
-# main
+# K FOLD CROSS VALIDATION
+def cross_validation(X, y, num_folds, k):
+
+    # make subarrays
+    sub_arrs_X = np.split(X, num_folds, axis=0)
+    sub_arrs_y = np.split(y, num_folds, axis=0)
+    
+    accuracy = []
+
+    for i in range(num_folds):
+        
+        #use i as test set
+        test_X = sub_arrs_X[i]
+        test_y = sub_arrs_y[i]
+
+        # stack all the other sets as the training sets
+        new_train_X = np.vstack([sub_arrs_X[j] for j in range(num_folds) if j != 1])        
+        new_train_y = np.vstack([sub_arrs_y[j] for j in range(num_folds) if j != 1])
+        
+        acc = validate(new_train_X, new_train_y, k)
+        accuracy.append(acc)
+        print(accuracy)
+    
+
+
+# MAIN
+
 # declare variables
 train_X, train_y, test_X, test_y = load_data()
 k = 5
+num_folds = 4
+#accuracy = cross_validation(train_X, train_y, num_folds, k)
 accuracy = validate(train_X, train_y, k)
 print(accuracy)
 
 
 
-   
