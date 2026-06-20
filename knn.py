@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import numpy as np
 from collections import Counter
 
@@ -52,23 +53,26 @@ def classify_point(indexes_of_nearest, y_labels):
     # print("label: ", label_counter.most_common(1)[0][0])
     return label_counter.most_common(1)[0][0]
 
+
 # needs prediction label and actual y for each example
-def validate(X, y, k):
+def validate(train_X, test_X, train_y, test_y, k):
     #validate <- classify <- get_nearest_neighbors
     total = 0
     count = 0
     
-    for i in range(len(X)):
-        indexes_of_nearest = get_k_nearest_neighbors(X, X[i], k)
-        prediction_label = classify_point(indexes_of_nearest, y)
+    for i in range(len(test_X)):
 
-        # debug
-        #print(prediction_label)
-
-        if prediction_label == y[i]:
+        # find nearest indexes in train set to individual query from test set
+        indexes_of_nearest = get_k_nearest_neighbors(train_X, test_X[i], k)
+        
+        # create prediction label for query from train_x
+        prediction_label = classify_point(indexes_of_nearest, train_y)
+        
+        # Increment total, and if label is right, add to count.
+        if prediction_label == test_y[i]:
             count = count + 1
         total = total + 1 
-    # print("count:", count, ". Total: ", total)
+
     return count / total
 
 
@@ -88,12 +92,13 @@ def cross_validation(X, y, num_folds, k):
         test_y = sub_arrs_y[i]
 
         # stack all the other sets as the training sets
-        new_train_X = np.vstack([sub_arrs_X[j] for j in range(num_folds) if j != 1])        
-        new_train_y = np.vstack([sub_arrs_y[j] for j in range(num_folds) if j != 1])
+        new_train_X = np.vstack([sub_arrs_X[j] for j in range(num_folds) if j != i])        
+        new_train_y = np.concatenate([sub_arrs_y[j] for j in range(num_folds) if j != i])
         
-        acc = validate(new_train_X, new_train_y, k)
+        acc = validate(new_train_X, test_X, new_train_y, test_y, k)
         accuracy.append(acc)
-        print(accuracy)
+    
+    return accuracy
     
 
 
@@ -103,9 +108,8 @@ def cross_validation(X, y, num_folds, k):
 train_X, train_y, test_X, test_y = load_data()
 k = 5
 num_folds = 4
-#accuracy = cross_validation(train_X, train_y, num_folds, k)
-accuracy = validate(train_X, train_y, k)
+accuracy = cross_validation(train_X, train_y, num_folds, k)
 print(accuracy)
 
 
-
+# get predicted y using test_X as queries, then compare with predicted_y using compute_accuracy
