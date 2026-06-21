@@ -2,6 +2,7 @@
 import numpy as np
 from collections import Counter
 
+# load data
 def load_data():
     data = np.genfromtxt('./bezdekIris.data', delimiter=',', dtype=None, encoding=None)
 
@@ -43,6 +44,7 @@ def get_k_nearest_neighbors(example_set, query, k):
 
     return indexes_of_nearest
 
+# using the nearest examples, look at their y values and classify current query
 def classify_point(indexes_of_nearest, y_labels):
     
     #create an array of just the k nearest neighbors
@@ -54,10 +56,11 @@ def classify_point(indexes_of_nearest, y_labels):
     return label_counter.most_common(1)[0][0]
 
 
-# needs prediction label and actual y for each example
+# Calculate accuracy using actual y-labels
 def validate(train_X, test_X, train_y, test_y, k):
     #validate <- classify <- get_nearest_neighbors
-    total = 0
+
+    # number of correct classifications
     count = 0
     
     for i in range(len(test_X)):
@@ -71,9 +74,8 @@ def validate(train_X, test_X, train_y, test_y, k):
         # Increment total, and if label is right, add to count.
         if prediction_label == test_y[i]:
             count = count + 1
-        total = total + 1 
 
-    return count / total
+    return count / len((test_X))
 
 
 # K FOLD CROSS VALIDATION
@@ -108,8 +110,12 @@ def cross_validation(X, y, num_folds, k):
 train_X, train_y, test_X, test_y = load_data()
 k = 5
 num_folds = 4
+
+#run K-fold cross validation on training data
 accuracy = cross_validation(train_X, train_y, num_folds, k)
-print(accuracy)
+print(num_folds, "-fold cross validation accuracy: ", accuracy)
 
+# run actual classification on test data
 
-# get predicted y using test_X as queries, then compare with predicted_y using compute_accuracy
+score = validate(train_X, test_X, train_y, test_y, k)
+print("Score on test set: ", score)
